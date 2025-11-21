@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Playful Learning — AI Frontend (Hackathon MVP)</title>
+    <style>
+        :root {
+            --bg: #0f1724;
+            --card: #0b1220;
+            --accent: #7c3aed;
+            --muted: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.03)
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+            background: linear-gradient(180deg, #041026 0%, #07122b 60%);
+            color: #e6eef8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px
+        }
+
+        .app {
+            width: 100%;
+            max-width: 980px;
+            border-radius: 16px;
+            padding: 20px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+        }
+
+        header {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 18px
+        }
+
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--accent), #06b6d4);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0
+        }
+
+        p.lead {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 18px;
+            margin-top: 18px
+        }
+
+        /* Left column (upload + meta) */
+        .card {
+            background: var(--card);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03)
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px
+        }
+
+        input[type=file] {
+            display: block
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            border-radius: 8px;
+            padding: 10px;
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            color: inherit
+        }
+
+        .small {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .btn {
+            background: linear-gradient(90deg, var(--accent), #06b6d4);
+            border: none;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600
+        }
+
+        .mode-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 10px;
+            border-radius: 10px;
+            color: var(--muted);
+            cursor: pointer
+        }
+
+        .modes {
+            display: flex;
+            gap: 8px
+        }
+
+        /* Right column (screens) */
+        .screen {
+            display: none;
+            padding: 16px
+        }
+
+        .screen.active {
+            display: block
+        }
+
+        .meta {
+            display: flex;
+            gap: 10px;
+            align-items: center
+        }
+
+        .chip {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .center {
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .quiz-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0.01));
+            padding: 14px;
+            border-radius: 10px
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px
+        }
+
+        .choice {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            cursor: pointer
+        }
+
+        .choice.correct {
+            outline: 3px solid rgba(34, 197, 94, 0.18);
+        }
+
+        .choice.wrong {
+            outline: 3px solid rgba(239, 68, 68, 0.18);
+        }
+
+        .hud {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 12px
+        }
+
+        .xp {
+            font-weight: 700;
+            color: #c7f9d8
+        }
+
+        footer {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.06);
+            border-top-color: var(--accent);
+            animation: spin 1s linear infinite
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @media (max-width:900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header>
+            <div class="logo">PL</div>
+            <div>
+                <h1>Playful Learning — Frontend (MVP)</h1>
+                <p class="lead">Upload any resource → Generate Quiz, Story, or Game. Built for hackathons.</p>
+            </div>
+        </header>
+
+        <div class="layout">
+            <div>
+                <div class="card">
+                    <label for="file">Upload file (PDF/TXT) or paste text / URL</label>
+                    <input id="file" type="file" accept=".pdf,.txt" />
+                    <div style="height:8px"></div>
+                    <label for="text">Or paste text / link</label>
+                    <textarea id="text" placeholder="Paste notes, article, or YouTube link here..."></textarea>
+                    <div style="height:8px"></div>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <button id="btn-upload" class="btn">Upload & Extract</button>
+                        <div id="upload-status" class="small"></div>
+                    </div>
+
+                    <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
+                    <div class="small">Choose mode after upload</div>
+                    <div style="height:8px"></div>
+                    <div class="modes">
+                        <button class="mode-btn" data-mode="quiz">Quiz Mode</button>
+                        <button class="mode-btn" data-mode="story">Story Mode</button>
+                        <button class="mode-btn" data-mode="game">Game Mode</button>
+                        <button class="mode-btn" data-mode="chat">Chat</button>
+                    </div>
+
+                    <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
+                    <div class="small">Progress</div>
+                    <div style="height:8px"></div>
+                    <div class="meta">
+                        <div class="chip">XP: <span id="xp">0</span></div>
+                        <div class="chip">Badges: <span id="badges">0</span></div>
+                        <div class="chip">Mistakes: <span id="mistakes">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <!-- Screens -->
+                <div id="screen-welcome" class="screen active card">
+                    <h3>Welcome — Try it now</h3>
+                    <p class="small">Upload any notes, paste an article, or paste a YouTube link. Then pick a mode to
+                        see the playful learning conversion.</p>
+                    <div style="height:18px"></div>
+                    <div class="center"><img
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='120'%3E%3Crect rx='10' width='220' height='120' fill='%2308121b'/%3E%3Ctext x='16' y='36' fill='%23bcd4ff' font-size='14'%3EGive any content → AI turns it into%3C/tspan%3E%3Ctspan x='16' y='60' font-size='14' fill='%23a9c8ff'%3Equiz / story / game%3C/tspan%3E%3C/text%3E%3C/svg%3E"
+                            alt="placeholder"></div>
+                </div>
+
+                <div id="screen-quiz" class="screen card">
+                    <div class="hud">
+                        <div class="xp">XP: <span id="xp-quiz">0</span></div>
+                        <div class="chip">Difficulty: <span id="difficulty">Easy</span></div>
+                        <div id="quiz-loading" style="margin-left:auto"></div>
+                    </div>
+                    <div id="quiz-area"></div>
+                </div>
+
+                <div id="screen-story" class="screen card">
+                    <div class="hud">
+                        <div class="chip">Story Mode</div>
+                        <div id="story-loading" style="margin-left:auto"></div>
+                    </div>
+                    <div id="story-area"></div>
+                </div>
+
+                <div id="screen-game" class="screen card">
+                    <div class="hud">
+                        <div class="chip">Game Mode</div>
+                        <div id="game-loading" style="margin-left:auto"></div>
+                    </div>
+                    <div id="game-area"></div>
+                </div>
+
+                <div id="screen-chat" class="screen card">
+                    <h3>Chat with AI</h3>
+                    <div style="height:8px"></div>
+                    <div id="chat-log"
+                        style="max-height:320px;overflow:auto;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px">
+                    </div>
+                    <div style="height:8px"></div>
+                    <div style="display:flex;gap:8px">
+                        <input id="chat-input"
+                            style="flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit"
+                            placeholder="Ask a question related to the uploaded content" />
+                        <button id="chat-send" class="btn">Send</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file');
+        const textInput = document.getElementById('text');
+        const uploadBtn = document.getElementById('btn-upload');
+        const uploadStatus = document.getElementById('upload-status');
+        const modes = document.querySelectorAll('.mode-btn');
+        const screens = document.querySelectorAll('.screen');
+        const xpEl = document.getElementById('xp');
+        const badgesEl = document.getElementById('badges');
+        const mistakesEl = document.getElementById('mistakes');
+
+        let state = { xp: 0, badges: 0, mistakes: 0, difficulty: "Easy" };
+        let resourceId = null;
+
+        const API = "";   // ← backend root (same domain → leave empty)
+
+        function showScreen(id) {
+            screens.forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        // -----------------------
+        //  UPLOAD RESOURCE → API
+        // -----------------------
+        uploadBtn.addEventListener('click', async () => {
+
+            uploadStatus.innerHTML = `<span class="small">Uploading...</span> <span class="spinner"></span>`;
+
+            const form = new FormData();
+
+            if (fileInput.files.length) {
+                form.append("file", fileInput.files[0]);
+            } else if (textInput.value.trim()) {
+                form.append("text", textInput.value.trim());
+            } else {
+                alert("Please upload a file or paste text.");
+                return;
+            }
+
+            let res = await fetch(API + "/upload-resource", {
+                method: "POST",
+                body: form
+            });
+
+            let data = await res.json();
+
+            if (data.error) {
+                uploadStatus.innerText = data.error;
+                return;
+            }
+
+            resourceId = data.resource_id;
+            uploadStatus.innerText = "Ready ✔";
+            showScreen("screen-welcome");
+        });
+
+        // -----------------------
+        //  MODE BUTTON HANDLING
+        // -----------------------
+        modes.forEach(btn => btn.addEventListener('click', () => {
+            if (!resourceId) {
+                alert("Upload something first!");
+                return;
+            }
+
+            const mode = btn.dataset.mode;
+
+            if (mode === "quiz") fetchQuiz();
+            if (mode === "story") fetchStory();
+            if (mode === "game") fetchGame();
+            if (mode === "chat") showScreen("screen-chat");
+        }));
+
+
+        // -----------------------
+        //  QUIZ MODE (real API)
+        // -----------------------
+        async function fetchQuiz() {
+            showScreen("screen-quiz");
+            document.getElementById("quiz-loading").innerHTML = `<div class="spinner"></div>`;
+
+            let res = await fetch("/generate-quiz", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ resource_id: resourceId })
+            });
+
+            let data = await res.json();
+            document.getElementById("quiz-loading").innerHTML = "";
+
+            let questions;
+            try {
+                questions = JSON.parse(data.questions);
+            } catch (e) {
+                return alert("Invalid quiz format from backend.");
+            }
+
+            renderQuiz(questions);
+        }
+
+
+        // QUIZ RENDERING (same as before)
+        function renderQuiz(questions) {
+            const quizArea = document.getElementById('quiz-area');
+            quizArea.innerHTML = "";
+
+            const container = document.createElement('div');
+            let current = 0, score = 0;
+
+            const qcard = document.createElement('div');
+            qcard.className = 'quiz-card';
+
+            function showQuestion() {
+                qcard.innerHTML = "";
+
+                const Q = questions[current];
+
+                const title = document.createElement("div");
+                title.innerHTML = `<strong>Q${current + 1}.</strong> ${Q.question}`;
+                qcard.appendChild(title);
+
+                const choices = document.createElement('div');
+                choices.className = 'choices';
+
+                Q.choices.forEach((ch, idx) => {
+                    const c = document.createElement("div");
+                    c.className = "choice";
+                    c.innerText = ch;
+
+                    c.onclick = () => {
+                        if (idx === Q.answer) {
+                            c.classList.add("correct");
+                            state.xp += 10;
+                        } else {
+                            c.classList.add("wrong");
+                            state.mistakes += 1;
+                            state.xp -= 2;
+                        }
+                        updateHUD();
+
+                        setTimeout(() => {
+                            current++;
+                            if (current < questions.length) showQuestion();
+                            else finish();
+                        }, 700);
+                    };
+
+                    choices.appendChild(c);
+                });
+
+                qcard.appendChild(choices);
+            }
+
+            function finish() {
+                qcard.innerHTML = `<h3>Quiz Completed</h3>
+                               <p class="small">XP earned: ${state.xp}</p>`;
+            }
+
+            showQuestion();
+            container.appendChild(qcard);
+            quizArea.appendChild(container);
+        }
+
+
+        // -----------------------
+        //  STORY MODE (real API)
+        // -----------------------
+        async function fetchStory() {
+            showScreen("screen-story");
+            document.getElementById("story-loading").innerHTML = `<div class="spinner"></div>`;
+
+            let res = await fetch("/generate-story-mode", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ resource_id: resourceId })
+            });
+
+            let data = await res.json();
+            document.getElementById("story-loading").innerHTML = "";
+
+            document.getElementById("story-area").innerHTML =
+                `<h3>Story</h3><p class="small">${data.story}</p>`;
+
+            state.xp += 5;
+            updateHUD();
+        }
+
+
+        // -----------------------
+        //  GAME MODE (real API)
+        // -----------------------
+        async function fetchGame() {
+            showScreen("screen-game");
+            document.getElementById("game-loading").innerHTML = `<div class="spinner"></div>`;
+
+            let res = await fetch("/generate-game-mode", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ resource_id: resourceId })
+            });
+
+            let data = await res.json();
+            document.getElementById("game-loading").innerHTML = "";
+
+            let gameJson;
+            try {
+                gameJson = JSON.parse(data.game);
+            } catch (e) {
+                return alert("Invalid game format");
+            }
+
+            const area = document.getElementById("game-area");
+            area.innerHTML = `<p class="small"><strong>Scenario:</strong> ${gameJson.scenario}</p>`;
+
+            gameJson.choices.forEach(c => {
+                const btn = document.createElement("button");
+                btn.className = "mode-btn";
+                btn.style.display = "block";
+                btn.style.marginTop = "8px";
+                btn.innerText = c.text;
+
+                btn.onclick = () => {
+                    const card = document.createElement("div");
+                    card.className = "quiz-card";
+                    card.innerText = c.result;
+                    area.appendChild(card);
+
+                    if (c.xp) state.xp += c.xp;
+                    if (c.badge) state.badges += c.badge;
+                    if (c.mistake) state.mistakes++;
+
+                    updateHUD();
+                };
+
+                area.appendChild(btn);
+            });
+        }
+
+
+        // -----------------------
+        //  CHAT MODE
+        // -----------------------
+        document.getElementById("chat-send").onclick = async () => {
+            const input = document.getElementById("chat-input");
+            const q = input.value.trim();
+            if (!q) return;
+
+            const log = document.getElementById("chat-log");
+
+            log.innerHTML += `<div><strong>You:</strong><br>${q}</div>`;
+
+            let res = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ resource_id: resourceId, question: q })
+            });
+
+            let data = await res.json();
+
+            log.innerHTML += `<div style="margin-top:6px;"><strong>AI:</strong><br>${data.answer}</div>`;
+            log.scrollTop = log.scrollHeight;
+
+            input.value = "";
+        };
+
+
+        // -----------------------
+        //  HUD UPDATE
+        // -----------------------
+        function updateHUD() {
+            xpEl.innerText = state.xp;
+            badgesEl.innerText = state.badges;
+            mistakesEl.innerText = state.mistakes;
+            document.getElementById('xp-quiz').innerText = state.xp;
+        }
+    </script>
+
+</body>
+
+</html>
